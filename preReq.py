@@ -1,6 +1,7 @@
 import urllib.request
 import xlrd
 import tkinter as tk
+import csv
 from tkinter import filedialog
 
 # ############################################
@@ -43,7 +44,7 @@ def read_col(filepath, col, header):
     return x
 
 
-def open_file():
+def open_sheet(title):
     # Extracted from https://stackoverflow.com/a/14119223/5696107
     # and https://pythonspot.com/tk-file-dialogs/
     # and https://stackoverflow.com/a/31732248/5696107
@@ -51,39 +52,29 @@ def open_file():
     root = tk.Tk()
     root.withdraw()
     return filedialog.askopenfilename(
-        title="Selecione o arquivo de Falta Cursar",
+        title=title,
         filetypes=(("Excel spreadsheets", "*.xls"),)
     )
 
 
-def get_prereq_dict(filepath):
-    """ reads from spreadsheet and returns dictionary """
-    mats = read_col(filepath, 2, 1)
-    prereq = dict()
-    for m in mats:
-        prereq[m] = list()
-        html = get_html(m)
-        for other_m in mats:
-            if other_m != m:
-                index = html.find(other_m)
-                if index != -1:
-                    prereq[m].append(other_m)
-    return prereq
+def save_to_csv(path, *args):
+    # Extracted from https://realpython.com/python-csv/
+    """ Reads several arrays and save them to a csv file """
+    with open(path, mode='w') as f:
+        writer = csv.writer(
+            f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for i in range(len(args[0])):
+            row = []
+            for arg in args:
+                row.append(arg[i])
+            writer.writerow(row)
 
 
-def print_graph(dependecy_dict):
-    """ Reads dependecy dictionary and prins graph accordingly """
-    for mat in dependecy_dict.keys():
-        posreq = list()
-        for other_mat, dependecies in dependecy_dict.items():
-            if mat in dependecies:
-                posreq.append(other_mat)
-        print(" -> ".join([mat, " -> ".join(posreq)]))
+def save_mats(path):
+    """ Saves courses ids in mat.csv from spreadsheet """
+    mats = read_col(path, 0, 2)
+    save_to_csv("mat.csv", mats)
 
 
-path = open_file()
-if path == "":
-    print("No file selected.")
-else:
-    prereq = get_prereq_dict(path)
-    print_graph(prereq)
+path = open_sheet("Open the courses spreadsheet")
+save_mats(path)
