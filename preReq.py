@@ -38,9 +38,8 @@ def read_col(filepath, col, header):
     sheets = workbook.sheet_names()
     sheet = workbook.sheet_by_name(sheets[0])
     x = []
-    for rownum in range(sheet.nrows):
-        if rownum > header:
-            x.append(sheet.cell(rownum, col).value)
+    for rownum in range(header+1, sheet.nrows):
+        x.append(sheet.cell(rownum, col).value)
     return x
 
 
